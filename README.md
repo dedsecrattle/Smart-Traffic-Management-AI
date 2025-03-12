@@ -90,7 +90,7 @@ The state space includes:
 smart-traffic-management/
 ├── traffic_management.py    # Main implementation file
 ├── README.md                # Project documentation
-└── examples/                # Example scripts and notebooks
+└── requirements.txt         # Project library requirements
 ```
 
 ## Results
@@ -102,23 +102,15 @@ The Q-learning agent learns to:
 - Balance the need to change lights with maintaining consistent flow
 - Respect minimum green time constraints
 
-## Future Work
+## Next Model plannings
 
-Future iterations will include:
+next iteration will include:
 
 - Multi-intersection scenarios with coordinating agents
 - More sophisticated MARL algorithms (QMIX, MADDPG)
 - Enhanced traffic simulation with realistic vehicle dynamics
 - Additional metrics for performance evaluation
 - Integration with traffic simulation frameworks like SUMO
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 
