@@ -1,0 +1,8 @@
+numpy
+pandas
+matplotlib
+torch
+traci
+sumolib
+gym
+argparse
