@@ -1,8 +1,5 @@
-numpy
-pandas
+sumo-rl
+stable-baselines3
 matplotlib
-torch
-traci
-sumolib
-gym
-argparse
+pandas
+tensorboard
