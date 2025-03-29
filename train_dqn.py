@@ -4,13 +4,16 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 
 def main():
+    def my_reward_fn(traffic_signal):
+        return traffic_signal.get_average_speed()
     env = SumoEnvironment(
         net_file=os.path.join("config/3x3grid", "3x3Grid2lanes.net.xml"),
         route_file=os.path.join("config/3x3grid", "routes14000.rou.xml"),
         single_agent=True,
         out_csv_name="outputs/dqn_train",
         use_gui=False,
-        num_seconds=300
+        num_seconds=500,
+        reward_fn=my_reward_fn,
     )
     
     check_env(env)
@@ -26,7 +29,7 @@ def main():
         tensorboard_log="./tensorboard/dqn/"
     )
 
-    model.learn(total_timesteps=100000)
+    model.learn(total_timesteps=10000)
     model.save("dqn_model.zip")
     print("DQN model saved to dqn_model.zip")
 
