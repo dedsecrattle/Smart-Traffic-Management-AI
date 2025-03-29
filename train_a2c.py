@@ -5,12 +5,12 @@ from stable_baselines3.common.env_checker import check_env
 
 def main():
     env = SumoEnvironment(
-        net_file=os.path.join("sumo_net", "./config/3x3grid/3x3Grid2lanes.net.xml"),
-        route_file=os.path.join("sumo_net", "./config/3x3grid/routes14000.rou.xml"),
+        net_file=os.path.join("config/3x3grid", "3x3Grid2lanes.net.xml"),
+        route_file=os.path.join("config/3x3grid", "routes14000.rou.xml"),
         single_agent=True,
         out_csv_name="outputs/a2c_train",
         use_gui=False,
-        num_seconds=300
+        num_seconds=2000
     )
     
     check_env(env)

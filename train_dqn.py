@@ -4,7 +4,6 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 
 def main():
-    # Create SUMO-RL environment
     env = SumoEnvironment(
         net_file=os.path.join("config/3x3grid", "3x3Grid2lanes.net.xml"),
         route_file=os.path.join("config/3x3grid", "routes14000.rou.xml"),
@@ -16,7 +15,6 @@ def main():
     
     check_env(env)
 
-    # Create DQN model
     model = DQN(
         policy="MlpPolicy",
         env=env,
@@ -28,10 +26,7 @@ def main():
         tensorboard_log="./tensorboard/dqn/"
     )
 
-    # Train for some timesteps
-    model.learn(total_timesteps=20000)
-
-    # Save the model
+    model.learn(total_timesteps=100000)
     model.save("dqn_model.zip")
     print("DQN model saved to dqn_model.zip")
 
