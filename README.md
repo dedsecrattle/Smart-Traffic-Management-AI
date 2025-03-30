@@ -5,7 +5,7 @@ This project uses [SUMO-RL](https://github.com/LucasAlegre/sumo-rl) environment 
 ## Files
 - `train_dqn.py`, `train_a2c.py`, `train_ppo.py`: Each script trains a different RL algorithm.
 - `evaluate.py`: Loads a saved model, runs a SUMO simulation for evaluation, and plots results.
-- `config/`: Contains different Configuration of Network
+- `sumo-config/`: Contains different Configuration of Network
 
 ## Steps
 1. **Install** Python packages:
