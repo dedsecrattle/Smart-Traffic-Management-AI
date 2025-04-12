@@ -18,14 +18,14 @@ from sumo_rl.exploration import EpsilonGreedy
 
 if __name__ == "__main__":
     alpha = 0.1
-    gamma = 0.99
+    gamma = 0.95
     decay = 1
-    runs = 30
+    runs = 5
     episodes = 4
 
     env = SumoEnvironment(
-        net_file="sumo_rl/nets/4x4-Lucas/4x4.net.xml",
-        route_file="sumo_rl/nets/4x4-Lucas/4x4c1c2c1c2.rou.xml",
+        net_file="sumo-config/4x4-Lucas/4x4.net.xml",
+        route_file="sumo-config/4x4-Lucas/4x4c1c2c1c2.rou.xml",
         use_gui=False,
         num_seconds=80000,
         min_green=5,

@@ -10,7 +10,6 @@ if "SUMO_HOME" in os.environ:
     sys.path.append(tools)
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
-import traci
 
 from sumo_rl import SumoEnvironment
 
@@ -22,7 +21,7 @@ if __name__ == "__main__":
         out_csv_name="outputs/2way-single-intersection/dqn",
         single_agent=True,
         use_gui=False,
-        num_seconds=20000,
+        num_seconds=3000,
     )
 
     model = DQN(
@@ -36,4 +35,4 @@ if __name__ == "__main__":
         exploration_final_eps=0.01,
         verbose=1,
     )
-    model.learn(total_timesteps=50000)
+    model.learn(total_timesteps=9600)
