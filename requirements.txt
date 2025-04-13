@@ -3,3 +3,5 @@ stable-baselines3
 matplotlib
 pandas
 tensorboard
+numpy
+sb3-contrib
