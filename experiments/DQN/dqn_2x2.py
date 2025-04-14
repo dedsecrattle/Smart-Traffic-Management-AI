@@ -1,86 +1,93 @@
 import os
 import sys
-
 import gymnasium as gym
-import numpy as np
 from stable_baselines3 import DQN
+from stable_baselines3.common.vec_env import DummyVecEnv
+from sumo_rl import SumoEnvironment
 
+# Ensure SUMO is set
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")
     sys.path.append(tools)
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
-from sumo_rl import SumoEnvironment
 
-def my_custom_reward(env):
-    rewards = {}
-    for ts in env.ts_ids:
-        wait_time = sum(env.traffic_signals[ts].get_waiting_time_per_lane())
-        
-        queue = sum(env.traffic_signals[ts].get_lanes_queue())
-        
-        rewards[ts] = -(wait_time * 0.5 + queue * 0.5)
-        rewards[ts] += env.traffic_signals[ts].get_last_step_vehicles_passed() * 2
-    
-    return rewards
+class SingleAgentWrapper(gym.Env):
+    def __init__(self, base_env, agent_id):
+        super().__init__()
+        self.base_env = base_env
+        self.agent_id = agent_id
+        self.observation_space = base_env.observation_spaces(agent_id)
+        self.action_space = base_env.action_spaces(agent_id)
+
+    def reset(self, *, seed=None, options=None):
+        obs = self.base_env.reset()
+        return obs[self.agent_id], {}
+
+    def step(self, action):
+        action_dict = {ts: 0 for ts in self.base_env.ts_ids}
+        action_dict[self.agent_id] = action
+
+        result = self.base_env.step(action_dict)
+        if len(result) == 5:
+            next_obs, rewards, terminateds, truncateds, infos = result
+        else:
+            next_obs, rewards, dones, infos = result
+            terminateds = dones
+            truncateds = {ts: False for ts in self.base_env.ts_ids}
+
+        return (
+            next_obs[self.agent_id],
+            rewards[self.agent_id],
+            terminateds[self.agent_id],
+            truncateds[self.agent_id],
+            infos.get(self.agent_id, {})
+        )
+
+    def render(self):
+        pass
+
+    def close(self):
+        self.base_env.close()
+
+
+def train_dqn(agent_id, base_env, total_timesteps=100_000):
+    wrapped_env = DummyVecEnv([lambda: SingleAgentWrapper(base_env, agent_id)])
+    model = DQN(
+        policy="MlpPolicy",
+        env=wrapped_env,
+        learning_rate=0.001,
+        buffer_size=50000,
+        learning_starts=1000,
+        train_freq=1,
+        batch_size=32,
+        target_update_interval=500,
+        exploration_initial_eps=0.05,
+        exploration_final_eps=0.005,
+        verbose=1,
+    )
+    model.learn(total_timesteps=total_timesteps)
+    model.save(f"models/dqn_agent_{agent_id}")
+    wrapped_env.close()
+
 
 if __name__ == "__main__":
     env = SumoEnvironment(
-    net_file="../sumo-config/2x2grid/2x2.net.xml",
-    route_file="../sumo-config/2x2grid/2x2.rou.xml",
-    out_csv_name="outputs/2x2/improved_multi_dqn",
-    single_agent=False,
-    use_gui=False,
-    num_seconds=100000,
-    min_green=5, 
-    max_green=60,
-    delta_time=5, 
-    yellow_time=3,
+        net_file="../sumo-config/2x2grid/2x2.net.xml",
+        route_file="../sumo-config/2x2grid/2x2.rou.xml",
+        out_csv_name="outputs/2x2/dqn_multiagent",
+        single_agent=False,
+        use_gui=False,
+        num_seconds=100000,
+        min_green=5,
+        max_green=60,
+        delta_time=5,
+        yellow_time=3,
     )
-    
-    agents = env.ts_ids
-    
-    models = {}
-    for agent_id in agents:
-        models[agent_id] = DQN(
-            env=env,
-            policy="MlpPolicy",
-            learning_rate=0.001,
-            learning_starts=0,
-            train_freq=1,
-            buffer_size=50000,
-            batch_size=32,
-            target_update_interval=500,
-            exploration_initial_eps=0.05,
-            exploration_final_eps=0.005,
-            verbose=1,
-        )
-    
-    episodes = 10
-    for episode in range(episodes):
-        obs = env.reset()
-        done = {"__all__": False}
-        
-        while not done["__all__"]:
-            actions = {}
-            for agent_id in agents:
-                action, _ = models[agent_id].predict(obs[agent_id], deterministic=False)
-                actions[agent_id] = action
-            
-            next_obs, rewards, done, info = env.step(actions)
-            
-            for agent_id in agents:
-                models[agent_id].replay_buffer.add(
-                    np.array([obs[agent_id]]),
-                    np.array([actions[agent_id]]),
-                    np.array([rewards[agent_id]]),
-                    np.array([next_obs[agent_id]]),
-                    np.array([done[agent_id]])
-                )
-                
-                models[agent_id].train(gradient_steps=1)
-            
-            obs = next_obs
-            
-        print(f"Episode {episode} completed")
+
+    for ts_id in env.ts_ids:
+        print(f"Training DQN for agent {ts_id}")
+        train_dqn(ts_id, env, total_timesteps=50000)
+
+    print("All DQN agents trained!")

@@ -1,3 +1,7 @@
 outputs
 */outputs/
 *.zip
+*/logs/
+*/models/
+__pycache__/
+*.py[cod]
